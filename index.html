@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="lWNxbCncSy3U6sujKDhxVt">
+<head data-page-node-id="VPSmJ2l8a4v1MjPD3G5z2E">
+<meta charset="UTF-8" data-page-node-id="nD0gRikVOS5CnMPE8vPJmn">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="a8GNSkjMNw6yJQFOSxNS7C">
+<title>AI 行业日报看板</title>
+<meta name="description" content="AI 行业日报看板——每日 AI 行业资讯速览，含今日重点、热点趋势、新闻跳转、阅读进度与深浅色切换。" data-page-node-id="tSG8auPE9ck1uKFxzTFehA">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232ea6d1'/%3E%3Ctext x='16' y='22' font-size='15' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3EAI%3C/text%3E%3C/svg%3E" data-page-node-id="n4GWYTGO4YPw7GFuy0VUAM">
+<style>
+/* ===================================================================
+   设计语言参照 HeyRoute.ai（离线安全版，数据写死）
+   - 浅色画布 + 极光网格渐变（aurora mesh gradient）
+   - SVG feTurbulence 分形噪点颗粒层
+   - 玻璃拟态（glassmorphism）
+   - 主色 cerulean 青蓝 #2ea6d1，点缀青绿 #1be4d0 与暖橙 #ff9d00
+   - 鼠标滑动效果：光标跟随光晕、卡片 3D 倾斜 + 高光跟随、hero 光球视差
+   - 新增：搜索 + 分类筛选、阅读进度 / 清除已读、深浅色主题切换
+   - 字体仅用系统栈，零外部依赖，断网可运行
+   =================================================================== */
+:root{
+  --page:#f7fcfd;
+  --ink:#0d2a33;
+  --ink-strong:#09212a;
+  --ink-2:#1c637d;
+  --muted:#5a7a86;
+  --line:rgba(18,66,84,.12);
+  --line-strong:rgba(18,66,84,.22);
+  --cerulean:#2ea6d1;
+  --cerulean-deep:#2584a7;
+  --teal:#1be4d0;
+  --apricot:#ff9d00;
+  --glass:rgba(255,255,255,.62);
+  --glass-strong:rgba(255,255,255,.82);
+  --shadow-soft:0 18px 48px rgba(37,132,167,.12), inset 0 1px #ffffffcc;
+  --shadow-hover:0 30px 72px rgba(37,132,167,.20), inset 0 1px #ffffff;
+  --r-min:6px; --r-std:8px; --r-card:18px; --r-pill:999px;
+  --font-disp:"Segoe UI",system-ui,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  --font-mono:ui-monospace,"SF Mono","Cascadia Code",Consolas,"Liberation Mono",monospace;
+  --mx:50%; --my:30%;
+}
+/* ---------- 深色主题（深浅色切换） ---------- */
+[data-theme="dark"]{
+  --page:#08131c;
+  --ink:#dceef5;
+  --ink-strong:#ffffff;
+  --ink-2:#9fd4e6;
+  --muted:#7fa6b5;
+  --line:rgba(255,255,255,.12);
+  --line-strong:rgba(255,255,255,.22);
+  --glass:rgba(16,34,44,.62);
+  --glass-strong:rgba(16,34,44,.82);
+  --shadow-soft:0 18px 48px rgba(0,0,0,.42), inset 0 1px rgba(255,255,255,.08);
+  --shadow-hover:0 30px 72px rgba(0,0,0,.55), inset 0 1px rgba(255,255,255,.1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  min-height:100vh;
+  color:var(--ink);
+  font-family:var(--font-disp);
+  font-weight:400;
+  line-height:1.63;
+  -webkit-font-smoothing:antialiased;
+  position:relative;
+  background:
+    radial-gradient(ellipse 760px 520px at -4% 128px, rgba(46,166,209,.40), rgba(124,203,255,.18) 44%, transparent 72%),
+    radial-gradient(ellipse 760px 520px at 98% 112px, rgba(27,228,208,.32), rgba(143,255,224,.14) 46%, transparent 74%),
+    radial-gradient(ellipse 720px 480px at 82% 760px, rgba(255,157,0,.18), rgba(255,196,102,.10) 42%, transparent 72%),
+    linear-gradient(112deg,#effaff,#f5fefd 38%,#f8feff 64%,#fff7eb);
+  background-attachment:fixed;
+  transition:color .3s ease;
+}
+[data-theme="dark"] body{
+  background:
+    radial-gradient(ellipse 760px 520px at -4% 128px, rgba(46,166,209,.22), transparent 70%),
+    radial-gradient(ellipse 760px 520px at 98% 112px, rgba(27,228,208,.18), transparent 72%),
+    radial-gradient(ellipse 720px 480px at 82% 760px, rgba(255,157,0,.12), transparent 72%),
+    linear-gradient(112deg,#08131c,#0a1a26 40%,#0c1722 70%,#0a141d);
+}
+/* 噪点颗粒层 */
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  opacity:.42;filter:blur(.6px);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px 180px;
+  -webkit-mask-image:radial-gradient(ellipse 92% 72% at 50% 28%, #000 55%, transparent 92%);
+          mask-image:radial-gradient(ellipse 92% 72% at 50% 28%, #000 55%, transparent 92%);
+}
+/* 光标跟随光晕 */
+body::after{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(440px circle at var(--mx,50%) var(--my,30%),
+            rgba(46,166,209,.16), rgba(27,228,208,.10) 35%, transparent 60%);
+  transition:background .12s ease-out;
+}
+
+/* ========== 顶部导航（玻璃 / 粘性） ========== */
+.nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:14px 40px;
+  background:rgba(255,255,255,.55);
+  backdrop-filter:blur(16px) saturate(1.15);
+  -webkit-backdrop-filter:blur(16px) saturate(1.15);
+  border-bottom:1px solid var(--line);
+}
+[data-theme="dark"] .nav{background:rgba(10,22,30,.55)}
+.nav-brand{
+  display:flex;align-items:center;gap:11px;
+  font-family:var(--font-disp);font-size:18px;font-weight:700;letter-spacing:-.3px;color:var(--ink-strong);
+}
+.nav-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:9px;
+  background:linear-gradient(135deg,var(--cerulean),var(--teal));
+  color:#fff;font-family:var(--font-mono);font-size:13px;font-weight:700;letter-spacing:.04em;
+  box-shadow:0 6px 16px rgba(37,132,167,.3);
+}
+.nav-right{display:flex;align-items:center;gap:12px}
+.clock{
+  display:flex;align-items:baseline;gap:8px;
+  font-family:var(--font-mono);font-size:13px;color:var(--ink-2);
+}
+.clock .c-date{color:var(--muted);font-size:12px}
+.clock .c-time{font-weight:600;color:var(--ink-strong);font-variant-numeric:tabular-nums}
+.nav-cta{
+  appearance:none;cursor:pointer;font-family:var(--font-disp);
+  display:inline-flex;align-items:center;gap:7px;
+  background:linear-gradient(135deg,var(--cerulean),var(--teal));
+  color:#fff;border:1px solid transparent;border-radius:var(--r-pill);
+  padding:9px 9px 9px 16px;font-size:14px;font-weight:600;
+  box-shadow:0 8px 22px rgba(37,132,167,.26);
+  transition:transform .15s ease,box-shadow .15s ease,filter .15s ease;
+}
+.nav-cta:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(37,132,167,.34);filter:brightness(1.04)}
+.nav-cta:active{transform:translateY(0)}
+.nav-cta .ico{font-size:15px;line-height:1;display:inline-block}
+.nav-cta.spin .ico{animation:spin .7s linear}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.theme-toggle{
+  appearance:none;cursor:pointer;font-family:var(--font-disp);
+  width:40px;height:40px;border-radius:50%;font-size:17px;line-height:1;
+  display:inline-flex;align-items:center;justify-content:center;
+  color:var(--ink-strong);background:var(--glass);
+  border:1px solid var(--line-strong);
+  transition:transform .15s ease,box-shadow .15s ease;
+}
+.theme-toggle:hover{transform:translateY(-1px);box-shadow:var(--shadow-soft)}
+.theme-toggle:focus-visible{outline:3px solid var(--cerulean-deep);outline-offset:2px}
+
+/* ========== HERO（浅色极光 + 视差光球，压缩以露出首屏新闻） ========== */
+.hero{
+  position:relative;overflow:hidden;text-align:center;
+  padding:60px 40px 40px;color:var(--ink-strong);
+}
+.orb{position:absolute;border-radius:50%;filter:blur(46px);opacity:.55;pointer-events:none;z-index:0;transition:transform .25s ease-out;will-change:transform}
+.orb.a{width:300px;height:300px;left:6%;top:-60px;background:radial-gradient(circle,#7ccbff,transparent 70%)}
+.orb.b{width:260px;height:260px;right:9%;top:-6px;background:radial-gradient(circle,#8fffe0,transparent 70%)}
+.orb.c{width:220px;height:220px;left:46%;bottom:-120px;background:radial-gradient(circle,#ffc98e,transparent 70%)}
+.hero-inner{position:relative;z-index:1;max-width:940px;margin:0 auto}
+.kicker{
+  display:inline-flex;align-items:center;gap:9px;
+  font-family:var(--font-mono);font-size:13px;font-weight:600;letter-spacing:1.3px;
+  text-transform:uppercase;color:var(--ink-2);margin-bottom:18px;
+}
+h1.title{
+  font-size:clamp(40px,5.6vw,68px);font-weight:700;line-height:1.15;letter-spacing:normal;
+  font-feature-settings:"kern" 1;color:var(--ink-strong);margin-bottom:14px;
+}
+h1.title .hl{
+  background:linear-gradient(96deg,var(--cerulean-deep),var(--teal) 82%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.subtitle{
+  font-size:clamp(15px,1.8vw,19px);font-weight:400;line-height:1.5;
+  color:var(--ink-2);max-width:600px;margin:0 auto 22px;
+}
+.subtitle b{font-weight:600;color:var(--ink-strong)}
+.status{
+  display:inline-flex;align-items:center;gap:9px;
+  font-family:var(--font-mono);font-size:12.5px;letter-spacing:.03em;
+  padding:8px 16px;border-radius:var(--r-pill);
+  background:rgba(255,255,255,.6);border:1px solid var(--line);color:var(--ink-2);
+}
+[data-theme="dark"] .status{background:rgba(16,34,44,.6)}
+.status .dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 3px rgba(27,228,208,.22)}
+.status.offline .dot{background:var(--muted);box-shadow:0 0 0 3px rgba(90,122,134,.18)}
+
+/* ========== 通用区块 ========== */
+.wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 40px}
+.section{padding:40px 0 8px}
+.section-label{
+  font-family:var(--font-mono);font-size:13px;font-weight:600;letter-spacing:1.3px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:10px;
+}
+.section-title{
+  font-size:clamp(24px,3vw,34px);font-weight:700;line-height:1.19;letter-spacing:-.42px;
+  font-feature-settings:"kern" 1;color:var(--ink-strong);margin-bottom:14px;
+}
+
+/* ========== 今日重点摘要（玻璃卡 + 左侧青蓝条 + 要点列表） ========== */
+.summary{
+  position:relative;margin:0 0 28px;padding:24px 28px 24px 32px;
+  border:1px solid rgba(255,255,255,.7);border-radius:var(--r-card);
+  background:var(--glass);backdrop-filter:blur(16px) saturate(1.1);
+  -webkit-backdrop-filter:blur(16px) saturate(1.1);
+  box-shadow:var(--shadow-soft);overflow:hidden;
+}
+[data-theme="dark"] .summary{border-color:var(--line-strong)}
+.summary::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--cerulean),var(--teal))}
+.summary p{font-size:15px;color:var(--ink);line-height:1.8;margin-bottom:14px}
+.summary p b{font-weight:600;color:var(--ink-strong)}
+.hl-list{list-style:none;display:grid;gap:11px}
+.hl-list li{
+  position:relative;padding:10px 14px 10px 18px;border-radius:var(--r-std);
+  background:rgba(255,255,255,.45);border:1px solid var(--line);
+  font-size:14.5px;line-height:1.6;color:var(--ink);
+}
+[data-theme="dark"] .hl-list li{background:rgba(255,255,255,.05)}
+.hl-list li::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px;
+  background:linear-gradient(180deg,var(--cerulean),var(--teal));
+}
+.hl-list .kw{font-weight:700;color:var(--cerulean-deep)}
+[data-theme="dark"] .hl-list .kw{color:var(--teal)}
+
+/* ========== 主体网格 ========== */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start;padding-bottom:48px}
+.section-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.section-bar h2{
+  font-family:var(--font-mono);font-size:13px;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);
+}
+.section-bar .hint{font-size:12.5px;color:var(--muted);font-family:var(--font-mono)}
+
+/* ========== 工具栏：搜索 + 分类筛选 ========== */
+.toolbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.search-box{
+  display:flex;align-items:center;gap:8px;flex:1 1 240px;min-width:200px;
+  padding:9px 14px;border-radius:var(--r-pill);
+  background:var(--glass);border:1px solid var(--line-strong);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  transition:border-color .2s ease,box-shadow .2s ease;
+}
+.search-box:focus-within{border-color:var(--cerulean);box-shadow:0 0 0 3px rgba(46,166,209,.18)}
+.search-ico{color:var(--muted);font-size:16px;line-height:1}
+.search-box input{
+  flex:1;border:none;background:transparent;outline:none;
+  font-family:var(--font-disp);font-size:14px;color:var(--ink);
+}
+.search-box input::placeholder{color:var(--muted)}
+.filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filter-pill{
+  appearance:none;cursor:pointer;font-family:var(--font-disp);font-size:13px;font-weight:600;
+  padding:7px 15px;border-radius:var(--r-pill);color:var(--ink-2);
+  background:var(--glass);border:1px solid var(--line);
+  transition:all .2s ease;
+}
+.filter-pill:hover{color:var(--ink-strong);border-color:var(--line-strong)}
+.filter-pill.active{
+  color:#fff;font-weight:700;
+  background:linear-gradient(135deg,var(--cerulean),var(--teal));
+  border-color:transparent;box-shadow:0 6px 18px rgba(37,132,167,.3);
+}
+.filter-pill:focus-visible{outline:3px solid var(--cerulean-deep);outline-offset:2px}
+
+/* ========== 列表状态条：进度 + 清除已读 ========== */
+.list-bar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.progress{
+  font-family:var(--font-mono);font-size:12.5px;letter-spacing:.04em;
+  padding:5px 13px;border-radius:var(--r-pill);
+  background:rgba(46,166,209,.12);border:1px solid rgba(46,166,209,.4);color:var(--cerulean-deep);
+}
+[data-theme="dark"] .progress{color:var(--teal)}
+.reset-btn{
+  appearance:none;cursor:pointer;font-family:var(--font-disp);font-size:12.5px;font-weight:600;
+  padding:5px 13px;border-radius:var(--r-pill);color:var(--muted);
+  background:transparent;border:1px solid var(--line-strong);
+  transition:all .2s ease;
+}
+.reset-btn:hover{color:var(--ink-strong);border-color:var(--cerulean)}
+.reset-btn:focus-visible{outline:3px solid var(--cerulean-deep);outline-offset:2px}
+
+/* ========== 新闻卡片（玻璃 + 3D 倾斜 + 高光跟随） ========== */
+.news-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+.news-card{
+  position:relative;grid-column:span 1;
+  padding:26px 28px;border-radius:var(--r-card);
+  border:1px solid rgba(255,255,255,.7);border-top:3px solid var(--cerulean);
+  background:var(--glass);
+  backdrop-filter:blur(16px) saturate(1.1);
+  -webkit-backdrop-filter:blur(16px) saturate(1.1);
+  box-shadow:var(--shadow-soft);
+  transform-style:preserve-3d;will-change:transform;
+  transition:box-shadow .25s ease,border-color .25s ease,transform .18s ease;
+  overflow:hidden;
+}
+[data-theme="dark"] .news-card{border-color:var(--line-strong)}
+.news-card.medium{border-top-color:var(--teal)}
+.news-card:hover{box-shadow:var(--shadow-hover)}
+.news-card:hover .news-title{color:var(--cerulean-deep)}
+.news-card::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;z-index:0;pointer-events:none;
+  opacity:0;transition:opacity .3s ease;
+  background:radial-gradient(340px circle at var(--cx,50%) var(--cy,0%), rgba(255,255,255,.6), transparent 45%);
+}
+.news-card:hover::before{opacity:1}
+.news-card.rank-1{grid-column:1 / -1;padding:30px 32px}
+
+.card-body{position:relative;z-index:1}
+.card-top{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.rank-no{
+  font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.08em;
+  color:var(--ink-strong);background:rgba(18,66,84,.08);padding:3px 10px;border-radius:var(--r-std);
+}
+[data-theme="dark"] .rank-no{background:rgba(255,255,255,.1)}
+.tag{
+  font-family:var(--font-mono);font-size:11.5px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.06em;padding:3px 10px;border-radius:var(--r-std);
+}
+.tag.high{color:#0c5a73;background:rgba(46,166,209,.14);border:1px solid rgba(46,166,209,.4)}
+.tag.medium{color:#0a6b66;background:rgba(27,228,208,.14);border:1px solid rgba(27,228,208,.42)}
+
+.card-link{color:inherit;text-decoration:none}
+.card-link::after{content:"";position:absolute;inset:0;z-index:2;border-radius:var(--r-card)}
+.card-link:focus-visible{outline:none}
+.card-link:focus-visible::after{outline:3px solid var(--cerulean-deep);outline-offset:2px}
+.news-card:has(.card-link:focus-visible){border-color:var(--cerulean-deep)}
+
+.source-line{
+  display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-size:12px;line-height:1.5;
+  color:var(--muted);font-family:var(--font-mono);transition:color .2s ease;position:relative;z-index:1;
+}
+.source-line::before{content:"";width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.7}
+.news-card:hover .source-line{color:var(--ink-2)}
+
+.news-title{
+  font-weight:600;letter-spacing:-.015em;color:var(--ink-strong);line-height:1.32;
+  margin-bottom:12px;padding-right:46px;transition:color .2s ease;position:relative;z-index:1;
+}
+.rank-1 .news-title{font-size:clamp(23px,2.4vw,30px)}
+.rank-2 .news-title,.rank-3 .news-title{font-size:clamp(19px,1.7vw,22px)}
+
+.news-desc{color:var(--ink);margin-bottom:16px;position:relative;z-index:1}
+.rank-1 .news-desc{font-size:16px;line-height:1.8}
+.rank-2 .news-desc,.rank-3 .news-desc{font-size:14.5px;line-height:1.78}
+
+.meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);
+  font-family:var(--font-mono);margin-bottom:18px;position:relative;z-index:1}
+.meta .src{color:var(--ink-2)}
+.meta .sep{opacity:.4}
+
+.read-btn{
+  appearance:none;cursor:pointer;font-family:var(--font-disp);
+  position:relative;z-index:3;
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 9px 9px 16px;border-radius:var(--r-pill);font-size:14.5px;font-weight:600;
+  color:#fff;border:1px solid transparent;
+  background:linear-gradient(135deg,var(--cerulean),var(--teal));
+  box-shadow:0 8px 20px rgba(37,132,167,.26);
+  transition:transform .15s ease,box-shadow .15s ease,filter .15s ease;
+}
+.read-btn:hover{transform:translateY(-1px);box-shadow:0 12px 26px rgba(37,132,167,.34);filter:brightness(1.04)}
+.read-btn:active{transform:translateY(0)}
+.read-btn:focus-visible{outline:3px solid var(--cerulean-deep);outline-offset:2px}
+.news-card.done .read-btn{
+  color:#fff;background:linear-gradient(135deg,var(--cerulean-deep),#0c8079);
+  box-shadow:0 0 0 1px rgba(37,132,167,.35);
+}
+.news-card.done{border-color:rgba(46,166,209,.45)}
+.news-card.done.medium{border-color:rgba(27,228,208,.45)}
+
+.check-badge{
+  position:absolute;top:18px;right:18px;z-index:3;
+  width:30px;height:30px;border-radius:9px;
+  display:grid;place-items:center;font-size:15px;font-weight:700;color:#fff;
+  background:linear-gradient(135deg,var(--cerulean),var(--teal));
+  box-shadow:0 0 0 3px rgba(46,166,209,.18),0 4px 12px rgba(37,132,167,.35);
+  opacity:0;transform:scale(.4) rotate(-12deg);
+  transition:opacity .24s ease,transform .3s cubic-bezier(.2,1.5,.4,1);
+  pointer-events:auto;
+}
+.news-card.done .check-badge{opacity:1;transform:scale(1) rotate(0)}
+
+.empty-tip{
+  display:none;padding:40px 20px;text-align:center;color:var(--muted);
+  font-size:14px;font-family:var(--font-mono);
+}
+
+/* ========== 右侧趋势面板（深青蓝玻璃，形成层次对比） ========== */
+.side{position:sticky;top:84px;display:grid;gap:18px}
+.panel{
+  border:1px solid rgba(255,255,255,.14);border-radius:var(--r-card);
+  background:linear-gradient(180deg,rgba(9,33,42,.86),rgba(9,33,42,.72));
+  backdrop-filter:blur(18px) saturate(1.1);
+  -webkit-backdrop-filter:blur(18px) saturate(1.1);
+  box-shadow:0 24px 64px rgba(9,33,42,.28);padding:22px 22px 20px;color:#eaf6fa;
+}
+[data-theme="dark"] .panel{background:linear-gradient(180deg,rgba(4,18,24,.92),rgba(4,18,24,.8))}
+.panel h3{
+  font-family:var(--font-mono);font-size:12px;font-weight:600;text-transform:uppercase;
+  letter-spacing:1.3px;color:#bfe9f3;margin-bottom:14px;
+  display:flex;align-items:center;gap:9px;
+}
+.panel h3::before{content:"";width:4px;height:15px;border-radius:3px;background:var(--teal)}
+.hot-list{display:grid;gap:9px;list-style:none}
+.hot-list li{
+  display:flex;gap:11px;align-items:flex-start;font-size:13.8px;color:rgba(234,246,250,.9);
+  line-height:1.55;padding:9px 10px;border-radius:var(--r-std);cursor:pointer;
+  border:1px solid transparent;transition:background .2s ease,border-color .2s ease;
+}
+.hot-list li:hover{background:rgba(255,255,255,.08);border-color:rgba(27,228,208,.4)}
+.hot-rank{
+  flex:none;width:22px;height:22px;border-radius:7px;
+  display:grid;place-items:center;font-size:11.5px;font-weight:600;font-family:var(--font-mono);
+  color:#06222b;background:var(--cerulean);
+}
+.panel-note{font-size:11.5px;color:rgba(234,246,250,.5);margin:6px 0 14px;line-height:1.5}
+.chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:6px}
+.chip{
+  font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.02em;
+  padding:5px 12px;border-radius:var(--r-std);
+  color:rgba(234,246,250,.85);background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.16);transition:all .2s ease;cursor:pointer;
+}
+.chip:hover{border-color:var(--teal);background:rgba(27,228,208,.16);color:#fff}
+.chip.active{border-color:var(--teal);background:rgba(27,228,208,.28);color:#fff;font-weight:600}
+.update-line{font-size:12px;color:rgba(234,246,250,.5);text-align:center;font-family:var(--font-mono);letter-spacing:.03em;margin-top:14px}
+
+/* ========== 页脚 ========== */
+.footer{
+  position:relative;z-index:1;
+  margin-top:8px;padding:30px 4px;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+  font-size:12.5px;color:var(--muted);font-family:var(--font-mono);letter-spacing:.03em;
+}
+.footer .brand{color:var(--ink-strong);font-weight:700;letter-spacing:.08em;font-size:15px;font-family:var(--font-disp)}
+
+/* ========== 移动端适配（<768px） ========== */
+@media (max-width:768px){
+  .nav{padding:12px 16px;gap:10px}
+  .nav-brand{font-size:16px}
+  .nav-icon{width:26px;height:26px;font-size:12px}
+  .clock .c-date{display:none}
+  .nav-cta{padding:8px 8px 8px 13px;font-size:13px}
+  .theme-toggle{width:36px;height:36px;font-size:15px}
+  .hero{padding:44px 20px 32px}
+  .wrap{padding:0 16px}
+  .section{padding:28px 0 4px}
+  .layout{grid-template-columns:1fr;gap:22px}
+  .side{position:static;order:2}
+  .news-area{order:1}
+  .news-grid{grid-template-columns:1fr;gap:16px}
+  .news-card,.news-card.rank-1{grid-column:span 1;padding:22px 18px}
+  .rank-1 .news-title{font-size:20px}
+  .rank-2 .news-title,.rank-3 .news-title{font-size:18px}
+  .news-title{padding-right:42px}
+  .check-badge{top:15px;right:15px;width:28px;height:28px;font-size:14px}
+  .section-bar{gap:8px;justify-content:center;text-align:center}
+  .section-bar .hint{width:100%;text-align:center}
+  .toolbar{gap:10px}
+  .filters{width:100%}
+  .footer{flex-direction:column;align-items:center;text-align:center;gap:6px}
+  body::after{display:none}
+}
+@media (max-width:1080px) and (min-width:769px){
+  .layout{grid-template-columns:minmax(0,1fr) 280px}
+}
+@media (hover:none){
+  .news-card{transform:none!important}
+  .news-card::before{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  body::after{transition:none}
+}
+</style>
+</head>
+<body data-page-node-id="8sX4HCcRzBSrB8TIE2PVxN">
+
+<!-- 顶部导航：品牌 + 实时时钟 + 主题切换 + 刷新 -->
+<nav class="nav" data-page-node-id="zxJxJBTZ2WS08kkvbL1anc">
+  <div class="nav-brand" data-page-node-id="C1hQUDYed5IfvAtLIQB3ZH"><span class="nav-icon" data-page-node-id="VSF0ChGX8REoL0p6qBnL8Y">AI</span> AI 行业日报</div>
+  <div class="nav-right" data-page-node-id="JqGgpWkqiGcg6fxa6HYOsg">
+    <div class="clock" id="clock" aria-live="off" title="实时本地时间" data-page-node-id="3UrDvShP7XIR1mgOMa1r6g">
+      <span class="c-date" id="clockDate" data-page-node-id="yGAf7X5QkYCWidn17R07dd">----.--.--</span>
+      <span class="c-time" id="clockTime" data-page-node-id="dycxvY8RTb9io9w4dY50HZ">--:--:--</span>
+    </div>
+    <button class="theme-toggle" id="themeBtn" type="button" aria-label="切换深色 / 浅色模式" title="切换深色 / 浅色模式" data-page-node-id="iNctCAfFvInGI3T2aw1i8M">🌙</button>
+    <button class="nav-cta" id="refreshBtn" type="button" aria-label="刷新看板视图" title="重新渲染当前视图" data-page-node-id="CAmv80MNQ6tHn85eqRSB4U">
+      <span class="ico" aria-hidden="true" data-page-node-id="3Ag3E0ghDpcIAA3T3UonV2">&#x21bb;</span> 刷新
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero" data-page-node-id="LpkMaSu1OKUgaTbCrFLdCS">
+  <span class="orb a" aria-hidden="true" data-page-node-id="OTS3h3q5KyJPe38LSR26uc"></span>
+  <span class="orb b" aria-hidden="true" data-page-node-id="NRPtyh9Y6Pn8mhWPDpgG76"></span>
+  <span class="orb c" aria-hidden="true" data-page-node-id="69DyWXfAnuQS7oQtt7KsdH"></span>
+  <div class="hero-inner" data-page-node-id="97WiHF5kH1EuJck3Rvwtyg">
+    <div class="kicker" data-page-node-id="t3OkcvjjUL9ddynW5EeH9M">DAILY AI BRIEF · <span id="heroDate" data-page-node-id="O2kYuFApGrElvwR5C75tJK">2026.09.16</span></div>
+    <h1 class="title" data-page-node-id="FtiOrYuENnuSILxs9KIlTg">AI <span class="hl" data-page-node-id="Kt0W9qjfVn7RHbwg5eyiXj">行业日报</span></h1>
+    <p class="subtitle" data-page-node-id="mCsrTRizDbeEqMnZl4vqfR">5 分钟看懂今天 <b data-page-node-id="YwGeGgnilF2oFC4oBrrSMJ">AI 圈</b> 发生了什么</p>
+    <div class="status" id="statusBox" data-page-node-id="aOFyw53E0ODjHT8cA1Cco0">
+      <span class="dot" aria-hidden="true" data-page-node-id="VB0wKkt5WCBKUZ9DplGeFg"></span>
+      <span id="statusText" data-page-node-id="hn5Pj5NyC5P2R8uhoCnnu0">离线缓存 · 数据更新于 2026-09-16</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap" data-page-node-id="5fFa9rAm8PVjkWVYZOTL4q">
+
+  <!-- 今日重点摘要 -->
+  <section class="summary" data-page-node-id="PagW7HS7oYV80HDEHmKDoh">
+    <div class="section-label" data-page-node-id="PGBbOzuD0qszseFvUxtNqA">TODAY&rsquo;S HIGHLIGHTS / 今日重点摘要</div>
+    <h2 class="section-title" data-page-node-id="ILytfsyHq71jBfqONekTg8">今日发生了什么</h2>
+    <p id="summaryText" data-page-node-id="E29RK1OmXxUtwXz25IUErx"></p>
+    <ul class="hl-list" id="hlList" data-page-node-id="NyFJgjUrnhcoPubsdYbBlx"></ul>
+  </section>
+
+  <!-- 主体 -->
+  <div class="layout" data-page-node-id="2Kkci0iBQWLf0sRqorcdjw">
+
+    <!-- 新闻区 -->
+    <main class="news-area" data-page-node-id="grUTWGpgtdXmMavubnNQit">
+      <div class="section-bar" data-page-node-id="wFqq5XsicYHojC7GIXpH4C">
+        <h2 data-page-node-id="yQoI9JeEbjIk5BJx6OFegm">TOP 3 NEWS / 今日要闻</h2>
+        <span class="hint" data-page-node-id="TS4AKZMMKRiz028C6MxHUk">点击卡片跳转原文 ↗ · 移动鼠标体验光效</span>
+      </div>
+
+      <!-- 工具栏：搜索 + 分类筛选 -->
+      <div class="toolbar" data-page-node-id="Ezo5iDLWzYlWEwxcG4Wbjq">
+        <div class="search-box" data-page-node-id="OTE8yVsYhPLKhZCBs2Glj9">
+          <span class="search-ico" aria-hidden="true" data-page-node-id="iTHxEPNnR1KrkXcwWJxJ5J">&#x2315;</span>
+          <input id="searchInput" type="search" placeholder="搜索新闻关键词…" aria-label="搜索新闻" autocomplete="off" data-page-node-id="uEFEXMeWXqlNMjnPMbt51E">
+        </div>
+        <div class="filters" id="catFilters" data-page-node-id="xMNQIkPHH6FVIWHKl8zE27"></div>
+      </div>
+
+      <!-- 列表状态：进度 + 清除已读 -->
+      <div class="list-bar" data-page-node-id="D8bCLn53NhfcyaaTkUywOG">
+        <span class="progress" id="progress" data-page-node-id="uF9nGhtaO8pGlG5yjYLv6c">已读 0 / 3</span>
+        <button class="reset-btn" id="resetBtn" type="button" data-page-node-id="v2arDditefEm9tQlTyEvGj">清除已读</button>
+      </div>
+
+      <div class="news-grid" id="newsGrid" data-page-node-id="MGQdSqdUNoGffpppwDeHTy"></div>
+      <p class="empty-tip" id="emptyTip" data-page-node-id="GwojWhk8XHjtBbGTBqmfUz">没有匹配的新闻，试试其他关键词或分类。</p>
+    </main>
+
+    <!-- 趋势面板（深青蓝玻璃） -->
+    <aside class="side" data-page-node-id="hUEsz4ocDcTh2RTleHPB1r">
+      <section class="panel" data-page-node-id="ZjGBHHy4KDCpCv1lPMgwJA">
+        <h3 data-page-node-id="Z85Dsml8cf2Oh93BunKwt0">今日趋势 / TRENDS</h3>
+        <p class="panel-note" data-page-node-id="EL1lCYUwnNL0s7AdH07YXM">点击趋势词可筛选今日新闻</p>
+        <ol class="hot-list" id="hotList" data-page-node-id="wmPHagCxBzlrD7PASUMw7V"></ol>
+        <div class="chips" id="chipList" data-page-node-id="rYhbrBADaiVwLAk9tJnx64"></div>
+        <p class="update-line" id="updateLine" data-page-node-id="hyt1BzDIi1YZf3HiBDNWer"></p>
+      </section>
+    </aside>
+
+  </div>
+
+  <footer class="footer" data-page-node-id="UIq5GDGZHpwciOA6q2veeF">
+    <span class="brand" data-page-node-id="js8R9TwC3fam98YAD6nB2q">AI 行业日报看板</span>
+    <span id="footerUpdate" data-page-node-id="6rCRMplFYTluK2GfNd4HGO">内容更新于 2026-09-16 · 数据来源：公开科技媒体报道</span>
+  </footer>
+
+</div>
+
+<script>
+/* ===================== AI-DASHBOARD-DATA-START ===================== */
+const DASHBOARD = {
+  "date": "2026-09-16",
+  "summary": "今日 AI 圈重点：Google DeepMind 发布 Gemini 3.8 Live 系列近实时语音对话模型；Anthropic 与 OpenAI 提议协调放缓前沿 AI 开发引发动机争议；以及 Vercel 用 AI 销售智能体将 inbound 团队从 10 人压缩至 1.25 人。以下为三条要闻速览。",
+  "highlights": [
+    { "t": "Google DeepMind 发布 Gemini 3.8 Live 与 3.8 Live Extended Thinking，主打近实时语音对话与复杂任务执行。", "kw": ["DeepMind", "Gemini 3.8 Live", "Extended Thinking"] },
+    { "t": "Anthropic 与 OpenAI 提议协调放缓前沿 AI 开发，Cohere CEO 等质疑其真实动机。", "kw": ["Anthropic", "OpenAI", "Cohere", "放缓前沿 AI 开发"] },
+    { "t": "Vercel 用 AI 销售智能体将 inbound 销售团队从 10 人压缩至 1.25 人，年成本仅数千美元。", "kw": ["Vercel", "AI 销售智能体"] }
+  ],
+  "cards": [
+    {
+      "id": "google-deepmind-发布-gemini-3-8-live-和-3-8-live-ex",
+      "rank": "01",
+      "level": "high",
+      "tag": "高优先级",
+      "title": "Google DeepMind 发布 Gemini 3.8 Live 和 3.8 Live Extended Thinking",
+      "desc": "Google DeepMind 发布 Gemini 3.8 Live 与 Gemini 3.8 Live Extended Thinking 两个近实时语音对话模型，主打语音智能体和复杂任务执行。",
+      "source": "Google DeepMind：Blog（RSS）",
+      "date": "09-15 17:05",
+      "category": "模型发布",
+      "href": "https://deepmind.google/blog/introducing-gemini-3-8-live-and-3-8-live-extended-thinking",
+      "domain": "deepmind.google"
+    },
+    {
+      "id": "anthropic-与-openai-提议协调放缓前沿-ai-开发-cohere-ceo-等批评",
+      "rank": "02",
+      "level": "high",
+      "tag": "高优先级",
+      "title": "Anthropic 与 OpenAI 提议协调放缓前沿 AI 开发，Cohere CEO 等批评者质疑其真实动机",
+      "desc": "Anthropic CEO Dario Amodei 呼吁行业与政府协调放缓前沿 AI 开发，并寻求反垄断豁免，Sam Altman 与 Elon Musk 表示同意。",
+      "source": "The Decoder：AI News（RSS）",
+      "date": "09-15 09:04",
+      "category": "行业动态",
+      "href": "https://the-decoder.com/not-everyone-is-convinced-that-big-ais-proposed-development-slowdown-is-really-about-safety",
+      "domain": "the-decoder.com"
+    },
+    {
+      "id": "vercel-将-inbound-销售团队从-10-人压缩至-1-25-人-ai-销售开发智能体",
+      "rank": "03",
+      "level": "medium",
+      "tag": "中优先级",
+      "title": "Vercel 将 inbound 销售团队从 10 人压缩至 1.25 人，AI 销售开发智能体年成本仅数千美元",
+      "desc": "Vercel COO Jeanne DeWitt Grosser 在 The Information 访谈中表示，公司 inbound 销售开发已实现 90% 自动化，团队从 10 人压缩至 1.25 人。",
+      "source": "Tomer Tunguz 博客（VC 分析）",
+      "date": "09-15 00:00",
+      "category": "行业动态",
+      "href": "https://tomtunguz.com/single-digit-thousand-dollar-ai-sdr",
+      "domain": "tomtunguz.com"
+    }
+  ],
+  "trends": {
+    "hot": [
+      { "t": "Apple 发布新一代 Apple Intelligence，Siri AI 正式以测试版上线", "k": "Apple Intelligence" },
+      { "t": "Anthropic 提出 3 步 Pace the Frontier 放缓计划，获 OpenAI、xAI 和 Microsoft 声援", "k": "Anthropic" },
+      { "t": "Amodei 发文呼吁放缓前沿 AI 开发，Altman、Hassabis、Nadella 等相继响应", "k": "放缓前沿 AI 开发" }
+    ],
+    "chips": [
+      "AI 资讯",
+      "大模型",
+      "智能体 Agent",
+      "开源",
+      "行业动态",
+      "研究突破"
+    ]
+  }
+};
+/* ====================== AI-DASHBOARD-DATA-END ====================== */
+
+(function () {
+  "use strict";
+
+  var STORE_KEY = "ai-daily-read-state-v1";
+  var THEME_KEY = "ai-daily-theme-v1";
+
+  var grid = document.getElementById("newsGrid");
+  var hotList = document.getElementById("hotList");
+  var chipList = document.getElementById("chipList");
+  var catFilters = document.getElementById("catFilters");
+  var summaryText = document.getElementById("summaryText");
+  var hlList = document.getElementById("hlList");
+  var heroDate = document.getElementById("heroDate");
+  var updateLine = document.getElementById("updateLine");
+  var footerUpdate = document.getElementById("footerUpdate");
+  var statusBox = document.getElementById("statusBox");
+  var statusText = document.getElementById("statusText");
+  var refreshBtn = document.getElementById("refreshBtn");
+  var themeBtn = document.getElementById("themeBtn");
+  var searchInput = document.getElementById("searchInput");
+  var progress = document.getElementById("progress");
+  var resetBtn = document.getElementById("resetBtn");
+  var emptyTip = document.getElementById("emptyTip");
+
+  /* ---------- 实时时钟（每秒，纯本地，离线可用） ---------- */
+  function pad(n){ return n < 10 ? "0" + n : "" + n; }
+  function fmtDate(d){ return d.getFullYear() + "." + pad(d.getMonth()+1) + "." + pad(d.getDate()); }
+  function fmtDateDash(d){ return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate()); }
+  function fmtTime(d){ return pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds()); }
+  var clockDate = document.getElementById("clockDate");
+  var clockTime = document.getElementById("clockTime");
+  function tick(){
+    var now = new Date();
+    clockDate.textContent = fmtDateDash(now);
+    clockTime.textContent = fmtTime(now);
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  /* ---------- 阅读状态本地存取 ---------- */
+  function loadState(){
+    try {
+      var raw = window.localStorage.getItem(STORE_KEY);
+      var obj = raw ? JSON.parse(raw) : null;
+      return (obj && typeof obj === "object") ? obj : {};
+    } catch (err) { return {}; }
+  }
+  function saveState(state){
+    try { window.localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (err) {}
+  }
+
+  function el(tag, cls, text){
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+  /* ---------- 渲染卡片 ---------- */
+  function renderCards(){
+    grid.innerHTML = "";
+    DASHBOARD.cards.forEach(function (c, idx) {
+      var lvl = (c.level === "high") ? "high" : "medium";
+      var art = el("article", "news-card rank-" + (idx + 1) + " " + lvl);
+      art.dataset.level = lvl;
+      art.dataset.id = c.id;
+      art._data = c;   // 供筛选使用
+
+      var badge = el("span", "check-badge", "✓");
+      badge.setAttribute("aria-hidden", "true");
+
+      var body = el("div", "card-body");
+
+      var top = el("div", "card-top");
+      top.appendChild(el("span", "rank-no", "TOP " + c.rank));
+      top.appendChild(el("span", "tag " + lvl, c.tag));
+
+      var h3 = el("h3", "news-title");
+      var a = el("a", "card-link", c.title);
+      a.href = c.href; a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.setAttribute("aria-label", "阅读新闻：" + c.title + "（" + c.source + "，新标签页打开）");
+      h3.appendChild(a);
+
+      var desc = el("p", "news-desc", c.desc);
+
+      var meta = el("div", "meta");
+      meta.appendChild(el("span", "src", c.source));
+      meta.appendChild(el("span", "sep", "/"));
+      meta.appendChild(el("span", null, c.date));
+      meta.appendChild(el("span", "sep", "/"));
+      meta.appendChild(el("span", null, c.category));
+
+      var btn = el("button", "read-btn", "阅读完成");
+      btn.type = "button";
+
+      var src = el("span", "source-line", "来源：" + c.domain + " ↗");
+
+      body.appendChild(top);
+      body.appendChild(h3);
+      body.appendChild(desc);
+      body.appendChild(meta);
+      body.appendChild(btn);
+      body.appendChild(src);
+
+      art.appendChild(badge);
+      art.appendChild(body);
+      grid.appendChild(art);
+    });
+    bindCardFX();
+  }
+
+  /* ---------- 渲染摘要要点（关键词高亮） ---------- */
+  function renderHighlights(){
+    hlList.innerHTML = "";
+    (DASHBOARD.highlights || []).forEach(function (h) {
+      var li = el("li");
+      var html = escapeHtml(h.t);
+      (h.kw || []).forEach(function (k) {
+        var re = new RegExp(escapeRegExp(k), "gi");
+        html = html.replace(re, '<b class="kw">' + escapeHtml(k) + "</b>");
+      });
+      li.innerHTML = html;
+      hlList.appendChild(li);
+    });
+  }
+
+  /* ---------- 渲染趋势面板（hot 可点击筛选 / chips 可点击筛选） ---------- */
+  function renderTrends(){
+    hotList.innerHTML = "";
+    (DASHBOARD.trends.hot || []).forEach(function (t, i) {
+      var li = el("li");
+      li.dataset.keyword = t.k || "";
+      li.setAttribute("role", "button");
+      li.setAttribute("tabindex", "0");
+      li.appendChild(el("span", "hot-rank", String(i + 1)));
+      li.appendChild(el("span", null, t.t));
+      hotList.appendChild(li);
+    });
+    chipList.innerHTML = "";
+    (DASHBOARD.trends.chips || []).forEach(function (k) {
+      var chip = el("span", "chip", k);
+      chip.dataset.keyword = k;
+      chip.setAttribute("role", "button");
+      chip.setAttribute("tabindex", "0");
+      chipList.appendChild(chip);
+    });
+  }
+
+  /* ---------- 渲染分类筛选按钮（全部 + 各 category） ---------- */
+  function renderCatFilters(){
+    catFilters.innerHTML = "";
+    var cats = [];
+    DASHBOARD.cards.forEach(function (c) {
+      if (cats.indexOf(c.category) < 0) cats.push(c.category);
+    });
+    var allBtn = el("button", "filter-pill active", "全部");
+    allBtn.type = "button"; allBtn.dataset.cat = "all";
+    catFilters.appendChild(allBtn);
+    cats.forEach(function (cat) {
+      var b = el("button", "filter-pill", cat);
+      b.type = "button"; b.dataset.cat = cat;
+      catFilters.appendChild(b);
+    });
+  }
+
+  /* ---------- 渲染日期 / 摘要 / 页脚 / 状态 ---------- */
+  function renderMeta(){
+    var d = DASHBOARD.date || "";
+    summaryText.textContent = DASHBOARD.summary || "";
+    heroDate.textContent = d.replace(/-/g, ".");
+    footerUpdate.textContent = "内容更新于 " + d + " · 数据来源：公开科技媒体报道";
+    updateLine.textContent = "数据快照：" + d;
+  }
+
+  function setStatus(kind, extra){
+    statusBox.classList.toggle("offline", kind === "offline");
+    if (kind === "offline") {
+      statusText.textContent = "离线缓存 · 数据更新于 " + (DASHBOARD.date || "");
+    } else if (kind === "local") {
+      statusText.textContent = "已刷新视图 · " + (extra || "");
+    }
+  }
+
+  renderMeta();
+  renderHighlights();
+  renderCards();
+  renderTrends();
+  renderCatFilters();
+  setStatus("offline");
+
+  /* ---------- 阅读状态恢复（按 data-id 独立） ---------- */
+  var state = loadState();
+  function applyState(){
+    Array.prototype.slice.call(grid.querySelectorAll(".news-card")).forEach(function (card) {
+      if (!card.dataset.id) return;
+      var done = state[card.dataset.id] === true;
+      card.classList.toggle("done", done);
+      var btn = card.querySelector(".read-btn");
+      if (btn) {
+        btn.textContent = done ? "已完成 ✓" : "阅读完成";
+        btn.setAttribute("aria-pressed", done ? "true" : "false");
+      }
+    });
+  }
+  applyState();
+
+  /* ---------- 阅读完成 / 已完成 切换（事件委托，互不干扰） ---------- */
+  grid.addEventListener("click", function (e) {
+    var btn = e.target.closest ? e.target.closest(".read-btn") : null;
+    if (!btn || !grid.contains(btn)) return;
+    var card = btn.closest(".news-card");
+    if (!card || !card.dataset.id) return;
+    var done = !card.classList.contains("done");
+    card.classList.toggle("done", done);
+    btn.textContent = done ? "已完成 ✓" : "阅读完成";
+    btn.setAttribute("aria-pressed", done ? "true" : "false");
+    state[card.dataset.id] = done;
+    saveState(state);
+    updateProgress();
+  });
+
+  /* ---------- 搜索 + 分类筛选 ---------- */
+  var currentCat = "all";
+  function matchesQuery(c, q){
+    if (!q) return true;
+    var hay = (c.title + " " + c.desc + " " + c.category + " " + c.source).toLowerCase();
+    return hay.indexOf(q.toLowerCase()) >= 0;
+  }
+  function applyFilter(){
+    var q = (searchInput.value || "").trim();
+    var visible = 0;
+    Array.prototype.slice.call(grid.querySelectorAll(".news-card")).forEach(function (card) {
+      var c = card._data;
+      var okQ = matchesQuery(c, q);
+      var okC = (currentCat === "all") || (c.category === currentCat);
+      var show = okQ && okC;
+      card.style.display = show ? "" : "none";
+      if (show) visible++;
+    });
+    emptyTip.style.display = visible ? "none" : "block";
+  }
+  function setQuery(kw, sourceEl){
+    searchInput.value = kw || "";
+    // chips 选中态（仅 chips 走这里）
+    Array.prototype.slice.call(chipList.querySelectorAll(".chip")).forEach(function (ch) {
+      ch.classList.toggle("active", sourceEl === ch && !!kw);
+    });
+    applyFilter();
+  }
+  searchInput.addEventListener("input", function () {
+    // 用户输入时清除 chips 选中态
+    Array.prototype.slice.call(chipList.querySelectorAll(".chip")).forEach(function (ch) { ch.classList.remove("active"); });
+    applyFilter();
+  });
+  catFilters.addEventListener("click", function (e) {
+    var btn = e.target.closest ? e.target.closest(".filter-pill") : null;
+    if (!btn) return;
+    currentCat = btn.dataset.cat || "all";
+    Array.prototype.slice.call(catFilters.querySelectorAll(".filter-pill")).forEach(function (b) {
+      b.classList.toggle("active", b === btn);
+    });
+    applyFilter();
+  });
+  // 趋势 hot 点击 -> 关键词搜索
+  hotList.addEventListener("click", function (e) {
+    var li = e.target.closest ? e.target.closest("li") : null;
+    if (!li || !hotList.contains(li)) return;
+    setQuery(li.dataset.keyword || "", null);
+  });
+  hotList.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") {
+      var li = e.target.closest ? e.target.closest("li") : null;
+      if (li) { e.preventDefault(); setQuery(li.dataset.keyword || "", null); }
+    }
+  });
+  // chips 点击 -> 关键词搜索（切换）
+  chipList.addEventListener("click", function (e) {
+    var chip = e.target.closest ? e.target.closest(".chip") : null;
+    if (!chip || !chipList.contains(chip)) return;
+    var kw = chip.dataset.keyword || "";
+    if (chip.classList.contains("active")) { setQuery("", null); }
+    else { setQuery(kw, chip); }
+  });
+  chipList.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") {
+      var chip = e.target.closest ? e.target.closest(".chip") : null;
+      if (chip) { e.preventDefault(); chip.click(); }
+    }
+  });
+
+  /* ---------- 阅读进度 + 清除已读 ---------- */
+  function updateProgress(){
+    var total = DASHBOARD.cards.length;
+    var done = grid.querySelectorAll(".news-card.done").length;
+    progress.textContent = "已读 " + done + " / " + total;
+  }
+  updateProgress();
+  resetBtn.addEventListener("click", function () {
+    if (!window.confirm("确定清除全部已读标记？")) return;
+    state = {};
+    saveState(state);
+    Array.prototype.slice.call(grid.querySelectorAll(".news-card")).forEach(function (card) {
+      card.classList.remove("done");
+      var b = card.querySelector(".read-btn");
+      if (b) { b.textContent = "阅读完成"; b.setAttribute("aria-pressed", "false"); }
+    });
+    updateProgress();
+  });
+
+  /* ---------- 刷新：纯本地重渲染（数据已写死，离线可用） ---------- */
+  function rerender(){
+    renderMeta();
+    renderHighlights();
+    renderCards();
+    renderTrends();
+    renderCatFilters();
+    applyState();
+    updateProgress();
+    applyFilter();
+  }
+  function doRefresh(){
+    refreshBtn.classList.add("spin");
+    setTimeout(function () { refreshBtn.classList.remove("spin"); }, 720);
+    rerender();
+    setStatus("local", fmtTime(new Date()));
+  }
+  refreshBtn.addEventListener("click", doRefresh);
+  setStatus("offline");
+
+  /* ---------- 深浅色主题切换（CSS 变量 + localStorage） ---------- */
+  function applyTheme(t){
+    document.documentElement.setAttribute("data-theme", t);
+    themeBtn.textContent = (t === "dark") ? "☀️" : "🌙";
+    try { window.localStorage.setItem(THEME_KEY, t); } catch (err) {}
+  }
+  var savedTheme = null;
+  try { savedTheme = window.localStorage.getItem(THEME_KEY); } catch (err) {}
+  var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  applyTheme(savedTheme || (prefersDark ? "dark" : "light"));
+  themeBtn.addEventListener("click", function () {
+    var cur = document.documentElement.getAttribute("data-theme");
+    applyTheme(cur === "dark" ? "light" : "dark");
+  });
+
+  /* ---------- 鼠标滑动效果（光标光晕 + 卡片 3D 倾斜 + 高光跟随 + hero 光球视差，rAF 节流） ---------- */
+  function initMouseFX(){
+    if (!window.matchMedia) return;
+    var fine = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+    var reduce = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+    if (!fine || reduce) return;
+
+    var root = document.documentElement;
+    var orbs = Array.prototype.slice.call(document.querySelectorAll(".orb"));
+
+    var mx = 0, my = 0, ticking = false;
+    window.addEventListener("mousemove", function (e) {
+      mx = e.clientX; my = e.clientY;
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(function () {
+          root.style.setProperty("--mx", mx + "px");
+          root.style.setProperty("--my", my + "px");
+          if (orbs.length) {
+            var dx = (mx - window.innerWidth / 2) / (window.innerWidth / 2);
+            var dy = (my - window.innerHeight / 2) / (window.innerHeight / 2);
+            orbs.forEach(function (o, i) {
+              var f = (i + 1) * 12;
+              o.style.transform = "translate(" + (dx * f).toFixed(1) + "px," + (dy * f).toFixed(1) + "px)";
+            });
+          }
+          ticking = false;
+        });
+      }
+    }, { passive: true });
+  }
+
+  /* 卡片级：3D 倾斜 + 高光坐标，每次渲染卡片后重新绑定 */
+  function bindCardFX(){
+    if (!window.matchMedia) return;
+    var fine = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+    var reduce = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+    if (!fine || reduce) return;
+
+    Array.prototype.slice.call(grid.querySelectorAll(".news-card")).forEach(function (card) {
+      card.addEventListener("mousemove", function (e) {
+        var r = card.getBoundingClientRect();
+        var px = (e.clientX - r.left) / r.width;
+        var py = (e.clientY - r.top) / r.height;
+        card.style.setProperty("--cx", (px * 100).toFixed(1) + "%");
+        card.style.setProperty("--cy", (py * 100).toFixed(1) + "%");
+        var ry = (px - 0.5) * 7;
+        var rx = (0.5 - py) * 7;
+        card.style.transform = "perspective(1100px) rotateX(" + rx.toFixed(2) + "deg) rotateY(" + ry.toFixed(2) + "deg) translateY(-6px)";
+      });
+      card.addEventListener("mouseleave", function () { card.style.transform = ""; });
+    });
+  }
+
+  initMouseFX();
+})();
+</script>
+
+</body>
+</html>
